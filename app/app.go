@@ -29,7 +29,7 @@ func (a *App) Initialize(dataSourceName string) {
 	articleController := controller.NewArticleController(articleService)
 
 	a.Router = mux.NewRouter()
-	a.Router.HandleFunc("/article/{id}", articleController.Get)
+	a.Router.HandleFunc("/articles/{id}", articleController.Get)
 }
 
 func (a *App) Run(port string) {
