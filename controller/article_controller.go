@@ -9,21 +9,17 @@ import (
 	"github.com/js-cha/article-api/service"
 )
 
-type articleController struct {
-	articleService service.ArticleService
+type ArticleController struct {
+	articleService *service.ArticleService
 }
 
-type ArticleController interface {
-	Get(w http.ResponseWriter, r *http.Request)
-}
-
-func NewArticleController(s service.ArticleService) articleController {
-	return articleController{
+func NewArticleController(s *service.ArticleService) *ArticleController {
+	return &ArticleController{
 		articleService: s,
 	}
 }
 
-func (c articleController) Get(w http.ResponseWriter, r *http.Request) {
+func (c *ArticleController) Get(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {

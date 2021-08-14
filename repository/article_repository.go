@@ -7,21 +7,17 @@ import (
 	"github.com/js-cha/article-api/model"
 )
 
-type articleRepository struct {
+type ArticleRepository struct {
 	DB *sql.DB
 }
 
-type ArticleRepository interface {
-	Get(id int) (model.Article, error)
-}
-
-func NewArticleRepository(db *sql.DB) articleRepository {
-	return articleRepository{
+func NewArticleRepository(db *sql.DB) *ArticleRepository {
+	return &ArticleRepository{
 		DB: db,
 	}
 }
 
-func (a articleRepository) Get(id int) (article model.Article, err error) {
+func (a *ArticleRepository) Get(id int) (article model.Article, err error) {
 	var tags sql.NullString
 	err = a.DB.QueryRow(`
 		SELECT a.id, a.title, a.date, a.body, group_concat(t.name) as tags 
