@@ -1,8 +1,7 @@
 package controller
 
 import (
-	"encoding/json"
-	"log"
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -28,14 +27,21 @@ func (c articleController) Get(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		log.Fatal(err)
+		BadRequestResponse(w)
+		return
 	}
 
 	article, error := c.articleService.Get(id)
 	if error != nil {
-		log.Fatal(error)
+		switch error {
+		case sql.ErrNoRows:
+			NotFoundResponse(w)
+			return
+		default:
+			InternalServerErrorResponse(w)
+			return
+		}
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	json.NewEncoder(w).Encode(article)
+
+	OKResponse(w, article)
 }
