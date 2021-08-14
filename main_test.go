@@ -39,16 +39,6 @@ func setupTables() {
 
 	test.DB.Exec(createArticleTable)
 	test.DB.Exec(createTagTable)
-
-	insertArticle, _ := test.DB.Prepare("INSERT INTO article (title, date, body) VALUES (?, ?, ?)")
-	insertArticle.Exec("article title 1", "2021-01-01", "article body 1")
-	insertArticle.Exec("article title 2", "2021-01-02", "article body 2")
-	insertArticle.Exec("article title 3", "2021-01-03", "article body 3")
-
-	insertTag, _ := test.DB.Prepare("INSERT INTO tag (name, article_id, date) VALUES (?, ?, ?)")
-	insertTag.Exec("food", 3, "2021-01-03")
-	insertTag.Exec("restaurant", 3, "2021-01-03")
-	insertTag.Exec("takeaway", 3, "2021-01-03")
 }
 
 func cleanUpTables() {
@@ -58,7 +48,7 @@ func cleanUpTables() {
 	test.DB.Exec("ALTER SEQUENCE tag_id_seq RESTART WITH 1")
 }
 
-func TestGetWithInvalidIDReturnsBadRequest(t *testing.T) {
+func TestGetInvalidId(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/articles/invalid-id", nil)
 	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
@@ -67,3 +57,23 @@ func TestGetWithInvalidIDReturnsBadRequest(t *testing.T) {
 		t.Errorf("Expected: %d. Actual: %d\n", http.StatusBadRequest, res.Code)
 	}
 }
+
+func TestGetNonExistentArticle(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/articles/999", nil)
+	res := httptest.NewRecorder()
+	test.Router.ServeHTTP(res, req)
+
+	if http.StatusNotFound != res.Code {
+		t.Errorf("Expected: %d. Actual: %d\n", http.StatusNotFound, res.Code)
+	}
+}
+
+// func TestGetArticle(t *testing.T) {
+// 	req, _ := http.NewRequest("GET", "/articles/1", nil)
+// 	res := httptest.NewRecorder()
+// 	test.Router.ServeHTTP(res, req)
+
+// 	if http.StatusNotFound != res.Code {
+// 		t.Errorf("Expected: %d. Actual: %d\n", http.StatusNotFound, res.Code)
+// 	}
+// }
