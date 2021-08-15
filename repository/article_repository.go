@@ -30,3 +30,23 @@ func (a *ArticleRepository) Get(id int) (article model.Article, err error) {
 	article.Tags = strings.Split(tags.String, ",")
 	return
 }
+
+func (a *ArticleRepository) Add(article model.Article) (int64, error) {
+	stmt, _ := a.DB.Prepare(`INSERT INTO article (title, date, body) VALUES (?, ?, ?)`)
+	res, err := stmt.Exec(article.Title, article.Date, article.Body)
+	if err != nil {
+		return 0, err
+	}
+	id, _ := res.LastInsertId()
+	stmt.Close()
+
+	stmt, _ = a.DB.Prepare(`INSERT INTO tag (name, article_id, date) VALUES (?, ?, ?)`)
+	for _, v := range article.Tags {
+		_, err := stmt.Exec(v, id, article.Date)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return id, err
+}

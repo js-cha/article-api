@@ -5,12 +5,6 @@ import (
 	"net/http"
 )
 
-const (
-	BadRequestError     = "INVALID ID"
-	NotFoundError       = "RESOURCE NOT FOUND"
-	InternalServerError = "INTERNAL SERVER ERROR"
-)
-
 func JSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -21,14 +15,18 @@ func OKResponse(w http.ResponseWriter, payload interface{}) {
 	JSON(w, http.StatusOK, payload)
 }
 
-func BadRequestResponse(w http.ResponseWriter) {
-	JSON(w, http.StatusBadRequest, map[string]string{"error": BadRequestError})
+func CreatedResponse(w http.ResponseWriter, payload interface{}) {
+	JSON(w, http.StatusCreated, payload)
 }
 
-func NotFoundResponse(w http.ResponseWriter) {
-	JSON(w, http.StatusNotFound, map[string]string{"error": NotFoundError})
+func BadRequestResponse(w http.ResponseWriter, error string) {
+	JSON(w, http.StatusBadRequest, map[string]string{"error": error})
 }
 
-func InternalServerErrorResponse(w http.ResponseWriter) {
-	JSON(w, http.StatusInternalServerError, map[string]string{"error": InternalServerError})
+func NotFoundResponse(w http.ResponseWriter, error string) {
+	JSON(w, http.StatusNotFound, map[string]string{"error": error})
+}
+
+func InternalServerErrorResponse(w http.ResponseWriter, error string) {
+	JSON(w, http.StatusInternalServerError, map[string]string{"error": error})
 }

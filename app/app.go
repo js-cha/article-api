@@ -29,7 +29,8 @@ func (a *App) Initialize(dataSourceName string) {
 	articleController := controller.NewArticleController(articleService)
 
 	a.Router = mux.NewRouter()
-	a.Router.HandleFunc("/articles/{id}", articleController.Get)
+	a.Router.HandleFunc("/articles/{id}", articleController.Get).Methods("GET")
+	a.Router.HandleFunc("/articles", articleController.Add).Methods("POST")
 }
 
 func (a *App) Run(port string) {
