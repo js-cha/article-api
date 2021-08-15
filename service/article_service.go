@@ -22,3 +22,7 @@ func (a *ArticleService) Get(id int) (article model.Article, err error) {
 func (a *ArticleService) Add(article model.Article) (int64, error) {
 	return a.articleRepository.Add(article)
 }
+
+func (a *ArticleService) GetTag(tagName, date string) (tag model.Tag, err error) {
+	return a.articleRepository.GetTag(tagName, date)
+}

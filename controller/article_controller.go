@@ -26,18 +26,18 @@ func (c *ArticleController) Get(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		BadRequestResponse(w, "Invalid article ID")
+		BadRequestResponse(w, "invalid article id")
 		return
 	}
 
-	article, error := c.articleService.Get(id)
-	if error != nil {
-		switch error {
+	article, err := c.articleService.Get(id)
+	if err != nil {
+		switch err {
 		case sql.ErrNoRows:
-			NotFoundResponse(w, "Article not found")
+			NotFoundResponse(w, "article not found")
 			return
 		default:
-			InternalServerErrorResponse(w, error.Error())
+			InternalServerErrorResponse(w, err.Error())
 			return
 		}
 	}
@@ -49,7 +49,7 @@ func (c *ArticleController) Add(w http.ResponseWriter, r *http.Request) {
 	var a model.Article
 	d := json.NewDecoder(r.Body)
 	if err := d.Decode(&a); err != nil && err != io.EOF {
-		BadRequestResponse(w, "Invalid request body")
+		BadRequestResponse(w, "invalid request body")
 		return
 	}
 	defer r.Body.Close()
@@ -60,4 +60,29 @@ func (c *ArticleController) Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	CreatedResponse(w, map[string]int64{"id": id})
+}
+
+func (c *ArticleController) GetTag(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tagName := vars["tagName"]
+	date := vars["date"]
+
+	if tagName == "" || date == "" {
+		BadRequestResponse(w, "invalid tag or date")
+		return
+	}
+
+	tag, err := c.articleService.GetTag(tagName, date)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			NotFoundResponse(w, "tag not found")
+			return
+		default:
+			InternalServerErrorResponse(w, err.Error())
+			return
+		}
+	}
+
+	OKResponse(w, tag)
 }

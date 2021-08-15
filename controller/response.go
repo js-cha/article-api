@@ -19,14 +19,14 @@ func CreatedResponse(w http.ResponseWriter, payload interface{}) {
 	JSON(w, http.StatusCreated, payload)
 }
 
-func BadRequestResponse(w http.ResponseWriter, error string) {
-	JSON(w, http.StatusBadRequest, map[string]string{"error": error})
+func BadRequestResponse(w http.ResponseWriter, err string) {
+	JSON(w, http.StatusBadRequest, map[string]string{"error": err})
 }
 
-func NotFoundResponse(w http.ResponseWriter, error string) {
-	JSON(w, http.StatusNotFound, map[string]string{"error": error})
+func NotFoundResponse(w http.ResponseWriter, err string) {
+	JSON(w, http.StatusNotFound, map[string]string{"error": err})
 }
 
-func InternalServerErrorResponse(w http.ResponseWriter, error string) {
-	JSON(w, http.StatusInternalServerError, map[string]string{"error": error})
+func InternalServerErrorResponse(w http.ResponseWriter, err string) {
+	JSON(w, http.StatusInternalServerError, map[string]string{"error": err})
 }
