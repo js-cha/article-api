@@ -25,8 +25,8 @@ func (a *ArticleRepository) Get(id int) (article model.Article, err error) {
 		LEFT JOIN tag AS t 
 		ON a.id = t.article_id
 		WHERE a.id = ?
-		GROUP BY a.id
-	`, id).Scan(&article.ID, &article.Title, &article.Date, &article.Body, &tags)
+		GROUP BY a.id`, id).
+		Scan(&article.ID, &article.Title, &article.Date, &article.Body, &tags)
 	article.Tags = strings.Split(tags.String, ",")
 	return
 }
@@ -48,7 +48,6 @@ func (a *ArticleRepository) Add(article model.Article) (int64, error) {
 		}
 	}
 	stmt.Close()
-
 	return id, err
 }
 
@@ -57,18 +56,18 @@ func (a *ArticleRepository) GetTag(tagName, date string) (tag model.Tag, err err
 	var articles string
 
 	err = a.DB.QueryRow(`
-		SELECT t1.tag_name, group_concat(t2.tag_name), group_concat(DISTINCT cast(t1.article_id as TEXT)), (SELECT COUNT(DISTINCT t1.tag_name) FROM tag WHERE date = t1.date)
-		FROM tag AS t1
-		LEFT JOIN tag AS t2
-		ON t1.date = t2.date AND t1.tag_name != t2.tag_name
-		WHERE t1.tag_name = ?
-		AND t1.date = ?
-		GROUP BY t1.tag_name
-		ORDER BY t1.date DESC
-		LIMIT 10;`, tagName, date).Scan(&tag.Tag, &relatedTags, &articles, &tag.Count)
+		SELECT tag_name,
+		COUNT(id),
+		(SELECT GROUP_CONCAT(cast(article_id as TEXT)) FROM (SELECT DISTINCT article_id FROM tag WHERE tag_name = t.tag_name AND date = t.date ORDER BY article_id DESC LIMIT 10)),
+		(SELECT GROUP_CONCAT(DISTINCT tag_name) FROM tag WHERE tag_name != t.tag_name AND date = t.date)
+		FROM tag as t
+		WHERE tag_name = ?
+		AND date = ?
+		ORDER BY id ASC
+		`, tagName, date).
+		Scan(&tag.Tag, &tag.Count, &articles, &relatedTags)
 
 	tag.Articles = strings.Split(articles, ",")
 	tag.Related_Tags = strings.Split(relatedTags, ",")
-
 	return
 }
