@@ -167,6 +167,22 @@ func TestAddArticle(t *testing.T) {
 	}
 }
 
+func TestAddArticleInvalidBody(t *testing.T) {
+	// arrange
+	body := []byte(`{"gibberish: "blah blah blah}`)
+	req, _ := http.NewRequest("POST", "/articles", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	// act
+	res := httptest.NewRecorder()
+	test.Router.ServeHTTP(res, req)
+
+	// assert
+	if http.StatusBadRequest != res.Code {
+		t.Errorf("Expected: %d. Actual: %d\n", http.StatusBadRequest, res.Code)
+	}
+}
+
 func TestGetTag(t *testing.T) {
 	// arrange
 	cleanUpTables()
@@ -205,5 +221,20 @@ func TestGetTag(t *testing.T) {
 
 	if !contains(tag.Related_Tags, "science") {
 		t.Errorf("Expected: %s to be found in %v but not found\n", "science", tag.Articles)
+	}
+}
+
+func TestGetTagNonExistentTAg(t *testing.T) {
+	// arrange
+	req, _ := http.NewRequest("GET", "/tags/sometag/2050-01-01", nil)
+	req.Header.Set("Content-Type", "application/json")
+
+	// act
+	res := httptest.NewRecorder()
+	test.Router.ServeHTTP(res, req)
+
+	// assert
+	if http.StatusNotFound != res.Code {
+		t.Errorf("Expected: %d. Actual: %d\n", http.StatusNotFound, res.Code)
 	}
 }

@@ -63,6 +63,7 @@ func (a *ArticleRepository) GetTag(tagName, date string) (tag model.Tag, err err
 		FROM tag as t
 		WHERE tag_name = ?
 		AND date = ?
+		GROUP BY t.article_id
 		ORDER BY id ASC
 		`, tagName, date).
 		Scan(&tag.Tag, &tag.Count, &articles, &relatedTags)

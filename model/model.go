@@ -7,3 +7,10 @@ type Article struct {
 	Body  string   `json:"body"`
 	Tags  []string `json:"tags"`
 }
+
+type Tag struct {
+	Tag          string   `json:"tag"`
+	Count        int      `json:"count"`
+	Articles     []string `json:"articles"`
+	Related_Tags []string `json:"related_tags"`
+}
