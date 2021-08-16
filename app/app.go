@@ -28,7 +28,7 @@ const (
 
 func (a *App) Initialize(dataSourceName string) {
 	var err error
-	a.DB, err = sql.Open("sqlite3", fmt.Sprintf("./db/%s", dataSourceName))
+	a.DB, err = sql.Open("sqlite3", fmt.Sprintf("./%s", dataSourceName))
 	if err != nil {
 		log.Fatal(err)
 	}
