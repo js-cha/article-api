@@ -3,6 +3,7 @@ package main_test
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -35,8 +36,12 @@ func TestMain(m *testing.M) {
 }
 
 func setupTables() {
-	test.DB.Exec(app.CreateTableArticle)
-	test.DB.Exec(app.CreateTableTag)
+	if _, err := test.DB.Exec(app.CreateTableArticle); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := test.DB.Exec(app.CreateTableTag); err != nil {
+		test.DB.Exec(app.CreateTableTag)
+	}
 }
 
 func cleanUpTables() {
@@ -71,10 +76,11 @@ func contains(s []string, str string) bool {
 
 func TestGetInvalidId(t *testing.T) {
 	// arrange
-	req, _ := http.NewRequest("GET", "/articles/invalid-id", nil)
-	res := httptest.NewRecorder()
+	cleanUpTables()
 
 	// act
+	req, _ := http.NewRequest("GET", "/articles/invalid-id", nil)
+	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
 
 	// assert
@@ -85,10 +91,11 @@ func TestGetInvalidId(t *testing.T) {
 
 func TestGetNonExistentArticle(t *testing.T) {
 	// arrange
-	req, _ := http.NewRequest("GET", "/articles/999", nil)
-	res := httptest.NewRecorder()
+	cleanUpTables()
 
 	// act
+	req, _ := http.NewRequest("GET", "/articles/999", nil)
+	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
 
 	// assert
@@ -104,23 +111,20 @@ func TestGetArticle(t *testing.T) {
 	date := "2021-01-01"
 	body := "awesome content"
 	tags := []string{"fitness", "health", "science"}
-
 	id := addArticle(title, date, body)
 	addTags(id, tags, date)
-
-	req, _ := http.NewRequest("GET", "/articles/1", nil)
-	res := httptest.NewRecorder()
+	var article model.Article
 
 	// act
+	req, _ := http.NewRequest("GET", "/articles/1", nil)
+	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
+	json.Unmarshal(res.Body.Bytes(), &article)
 
 	// assert
 	if http.StatusOK != res.Code {
 		t.Errorf("Expected: %d. Actual: %d\n", http.StatusOK, res.Code)
 	}
-
-	var article model.Article
-	json.Unmarshal(res.Body.Bytes(), &article)
 
 	if id != article.ID {
 		t.Errorf("Expected: %d. Actual: %d\n", id, article.ID)
@@ -147,20 +151,18 @@ func TestAddArticle(t *testing.T) {
 	// arrange
 	cleanUpTables()
 	body := []byte(`{"title": "test article", "date": "2021-01-01", "body": "test body", "tags": ["health", "fitness", "science"]}`)
-	req, _ := http.NewRequest("POST", "/articles", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
+	var response map[string]int64
 
 	// act
+	req, _ := http.NewRequest("POST", "/articles", bytes.NewBuffer(body))
 	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
+	json.Unmarshal(res.Body.Bytes(), &response)
 
 	// assert
 	if http.StatusCreated != res.Code {
 		t.Errorf("Expected: %d. Actual: %d\n", http.StatusCreated, res.Code)
 	}
-
-	var response map[string]int64
-	json.Unmarshal(res.Body.Bytes(), &response)
 
 	if response["id"] != 1 {
 		t.Errorf("Expected: %d. Actual: %d\n", 1, response["id"])
@@ -170,10 +172,9 @@ func TestAddArticle(t *testing.T) {
 func TestAddArticleInvalidBody(t *testing.T) {
 	// arrange
 	body := []byte(`{"gibberish: "blah blah blah}`)
-	req, _ := http.NewRequest("POST", "/articles", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
 
 	// act
+	req, _ := http.NewRequest("POST", "/articles", bytes.NewBuffer(body))
 	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
 
@@ -188,17 +189,15 @@ func TestGetTag(t *testing.T) {
 	cleanUpTables()
 	id := addArticle("test article", "2021-01-01", "awesome content")
 	addTags(id, []string{"fitness", "health", "science"}, "2021-01-01")
-
-	req, _ := http.NewRequest("GET", "/tags/health/2021-01-01", nil)
-	req.Header.Set("Content-Type", "application/json")
+	var tag model.Tag
 
 	// act
+	req, _ := http.NewRequest("GET", "/tags/health/2021-01-01", nil)
 	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
+	json.Unmarshal(res.Body.Bytes(), &tag)
 
 	// assert
-	var tag model.Tag
-	json.Unmarshal(res.Body.Bytes(), &tag)
 	if http.StatusOK != res.Code {
 		t.Errorf("Expected: %d. Actual: %d\n", http.StatusOK, res.Code)
 	}
@@ -226,10 +225,10 @@ func TestGetTag(t *testing.T) {
 
 func TestGetTagNonExistentTAg(t *testing.T) {
 	// arrange
-	req, _ := http.NewRequest("GET", "/tags/sometag/2050-01-01", nil)
-	req.Header.Set("Content-Type", "application/json")
+	cleanUpTables()
 
 	// act
+	req, _ := http.NewRequest("GET", "/tags/sometag/2050-01-01", nil)
 	res := httptest.NewRecorder()
 	test.Router.ServeHTTP(res, req)
 

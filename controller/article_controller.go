@@ -53,6 +53,7 @@ func (c *ArticleController) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+
 	id, err := c.articleService.Add(a)
 	if err != nil {
 		InternalServerErrorResponse(w, err.Error())
@@ -66,7 +67,6 @@ func (c *ArticleController) GetTag(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	tagName := vars["tagName"]
 	date := vars["date"]
-
 	if tagName == "" || date == "" {
 		BadRequestResponse(w, "invalid tag or date")
 		return
