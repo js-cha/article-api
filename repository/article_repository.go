@@ -56,14 +56,14 @@ func (a *ArticleRepository) GetTag(tagName, date string) (tag model.Tag, err err
 	var articles string
 
 	err = a.DB.QueryRow(`
-		SELECT tag_name,
-		COUNT(id),
+		SELECT t.tag_name,
+		COUNT(t.tag_name),
 		(SELECT GROUP_CONCAT(cast(article_id as TEXT)) FROM (SELECT DISTINCT article_id FROM tag WHERE tag_name = t.tag_name AND date = t.date ORDER BY article_id DESC LIMIT 10)),
 		(SELECT GROUP_CONCAT(DISTINCT tag_name) FROM tag WHERE tag_name != t.tag_name AND date = t.date)
 		FROM tag as t
-		WHERE tag_name = ?
-		AND date = ?
-		GROUP BY t.article_id
+		WHERE t.tag_name = ?
+		AND t.date = ?
+		GROUP BY t.tag_name
 		`, tagName, date).
 		Scan(&tag.Tag, &tag.Count, &articles, &relatedTags)
 
