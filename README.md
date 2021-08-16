@@ -22,9 +22,11 @@
  ```
 
 `GET /articles/{id}`
+* `/articles/1`
 
 `GET /tags/{tagName}/{date}`
 * `{date}` is in `YYYY-MM-DD` format
+* `/tags/tag1/2021-01-01`
 
 ## Description
 Decided to use `go-sqlite3` -- file-based database for hassle-free and easy to run database solution.
