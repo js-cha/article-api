@@ -47,5 +47,6 @@ func (a *App) Initialize(dataSourceName string) {
 }
 
 func (a *App) Run(port string) {
+	fmt.Printf("Running server at http://localhost:%s\n", port)
 	log.Fatal(http.ListenAndServe(port, a.Router))
 }
